@@ -1,41 +1,60 @@
+{% load currency_filters %}
+{% load category_tags %}
 {% load i18n %}
 <nav class="navbar navbar-color-on-scroll fixed-top navbar-expand-lg " color-on-scroll="100" id="sectionsNav">
     <div class="container">
-      <div class="navbar-translate">
-        <a class="navbar-brand" href="{{ homepage_url }}">
-         {% block brand_title %}{{ shop_name }}{% endblock %}</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="sr-only">Toggle navigation</span>
-          <span class="navbar-toggler-icon"></span>
-          <span class="navbar-toggler-icon"></span>
-          <span class="navbar-toggler-icon"></span>
-        </button>
-      </div>
-      <div class="collapse navbar-collapse">
-        <ul class="navbar-nav ml-auto">
-          <li class="dropdown nav-item">
-            <a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown">
-              <i class="material-icons">account_circle</i> Account
-            </a>
-            <div class="dropdown-menu dropdown-with-icons">
+        <div class="navbar-translate">
+            <a class="navbar-brand" href="{{ homepage_url }}">
+                {% block brand_title %}{{ shop_name }}{% endblock %}</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" aria-expanded="false"
+                    aria-label="Toggle navigation">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="navbar-toggler-icon"></span>
+                <span class="navbar-toggler-icon"></span>
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </div>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav ml-auto">
+                <li class="dropdown nav-item">
+                    <a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown">
+                        <i class="material-icons">account_circle</i> Account
+                    </a>
+                    <div class="dropdown-menu dropdown-with-icons">
 
-              <a href="examples/login-page.html" class="dropdown-item">
-                <i class="material-icons">fingerprint</i> Login Page
-              </a>
-              <a href="examples/signup-page.html" class="dropdown-item">
-                <i class="material-icons">person_add</i> Register
-              </a>
-            </div>
-          </li>
-          <li class="button-container nav-item iframe-extern">
-            <a href="/" class="btn btn-rose btn-round">
-              <i class="material-icons">shopping_cart</i> 5
-            </a>
-          </li>
-        </ul>
-      </div>
+                        <a href="examples/login-page.html" class="dropdown-item">
+                            <i class="material-icons">fingerprint</i> Login Page
+                        </a>
+                        <a href="examples/signup-page.html" class="dropdown-item">
+                            <i class="material-icons">person_add</i> Register
+                        </a>
+                    </div>
+                </li>
+                <li class="button-container nav-item iframe-extern">
+
+                    <a href="/" class="btn btn-rose btn-round">
+                        <i class="material-icons">shopping_cart</i>
+
+                        {% if not request.basket.is_empty %}
+                            {{ request.basket.num_items }} |
+                            {% if request.basket.is_tax_known %}
+                                {% blocktrans with total=request.basket.total_incl_tax|currency:request.basket.currency %}
+                                   {{ total }}
+                                {% endblocktrans %}
+                            {% else %}
+                                {% blocktrans with total=request.basket.total_excl_tax|currency:request.basket.currency %}
+                                    {{ total }}
+                                {% endblocktrans %}
+                            {% endif %}
+                        {% else %}
+                            0
+                        {% endif %}
+                    </a>
+                </li>
+            </ul>
+        </div>
     </div>
-  </nav>
+</nav>
 <div id="top_page" class="navbar navbar-default navbar-static-top accounts">
     {# This is used in mobile view #}
     <div class="navbar-header">
@@ -48,47 +67,54 @@
 
     <div class="navbar-collapse account-collapse collapse">
         <div class="container-fluid">
-            {% block nav_account_languages %}
+                        {% block nav_account_languages %}
             {% if LANGUAGES|length > 1 %}
-                <form id="language_selector" class="navbar-left navbar-form" action="{% url 'set_language' %}" method="post">
+                <form id="language_selector" class="navbar-left navbar-form" action="{% url 'set_language' %}"
+                      method="post">
                     {% csrf_token %}
-                    <input name="next" type="hidden" value="{{ language_neutral_url_path }}" />
+                    <input name="next" type="hidden" value="{{ language_neutral_url_path }}"/>
                     <div class="form-group">
                         <select name="language" class="form-control">
                             {% get_language_info_list for LANGUAGES as languages %}
                             {% for language in languages %}
-                                <option value="{{ language.code }}"{% if language.code == LANGUAGE_CODE%} selected="selected"{% endif %}>
+                                <option value="{{ language.code }}"{% if language.code == LANGUAGE_CODE %}
+                                        selected="selected"{% endif %}>
                                     {{ language.name_local }}
                                 </option>
                             {% endfor %}
                         </select>
                     </div>
-                    <button class="btn btn-default" type="submit" data-loading-text="{% trans 'Submitting...' %}">{% trans "Go" %}</button>
+                    <button class="btn btn-default" type="submit"
+                            data-loading-text="{% trans 'Submitting...' %}">{% trans "Go" %}</button>
                 </form>
             {% endif %}
-            {% endblock %}
+                        {% endblock %}
             <ul class="nav navbar-nav navbar-right">
                 {% if user.is_authenticated %}
-                {% block nav_account_navbar_authenticated %}
-                    <li>
-                        {% if num_unread_notifications > 0 %}
-                            {# If user has new notifications - we change account link to go to inbox #}
-                            <a href="{% url 'customer:notifications-inbox' %}">
-                                <i class="icon-user"></i>
-                                {% trans "Account" %}
-                                <span class="label label-warning">{{ num_unread_notifications }}</span>
-                            </a>
-                        {% else %}
-                            <a href="{% url 'customer:summary' %}"><i class="icon-user"></i> {% trans "Account" %}</a>
+                    {% block nav_account_navbar_authenticated %}
+                        <li>
+                            {% if num_unread_notifications > 0 %}
+                                {# If user has new notifications - we change account link to go to inbox #}
+                                <a href="{% url 'customer:notifications-inbox' %}">
+                                    <i class="icon-user"></i>
+                                    {% trans "Account" %}
+                                    <span class="label label-warning">{{ num_unread_notifications }}</span>
+                                </a>
+                            {% else %}
+                                <a href="{% url 'customer:summary' %}"><i class="icon-user"></i> {% trans "Account" %}
+                                </a>
+                            {% endif %}
+                        </li>
+                        {% if user.is_staff or perms.partner.dashboard_access %}
+                            <li><a href="{% url 'dashboard:index' %}"><i
+                                    class="icon-list-ul"></i> {% trans "Dashboard" %}</a></li>
                         {% endif %}
-                    </li>
-                    {% if user.is_staff or perms.partner.dashboard_access %}
-                        <li><a href="{% url 'dashboard:index' %}"><i class="icon-list-ul"></i> {% trans "Dashboard" %}</a></li>
-                    {% endif %}
-                    <li><a id="logout_link" href="{% url 'customer:logout' %}"><i class="icon-signout"></i> {% trans "Logout" %}</a></li>
-                {% endblock %}
+                        <li><a id="logout_link" href="{% url 'customer:logout' %}"><i
+                                class="icon-signout"></i> {% trans "Logout" %}</a></li>
+                                        {% endblock %}
                 {% else %}
-                    <li><a id="login_link" href="{% url 'customer:login' %}"><i class="icon-signin"></i> {% trans "Login or register" %}</a></li>
+                    <li><a id="login_link" href="{% url 'customer:login' %}"><i
+                            class="icon-signin"></i> {% trans "Login or register" %}</a></li>
                 {% endif %}
             </ul>
         </div>

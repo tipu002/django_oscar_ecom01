@@ -5,7 +5,9 @@ __pycache__
 /dist/
 /build/
 /node_modules/
-
+media
+images
+cache
 # venv
 /bin/
 /lib/
